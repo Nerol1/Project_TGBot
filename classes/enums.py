@@ -20,7 +20,6 @@ class Extensions(Enum):
     TXT = '.txt'
 
 class Languages(Enum):
-    RU = 'Русский язык'
     EN = 'Английский язык'
     DE = 'Немецкий язык'
     ZH = 'Китайский язык'

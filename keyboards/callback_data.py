@@ -15,3 +15,4 @@ class LangData(CallbackData, prefix='LD'):
     button: str
     language: str
     lang_name: str
+    command_type: str

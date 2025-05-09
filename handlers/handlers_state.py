@@ -14,3 +14,7 @@ class Quiz(StatesGroup):
 
 class Translate(StatesGroup):
     wait_for_answer = State()
+
+class Tutor(StatesGroup):
+    wait_for_word = State()
+    wait_for_answer = State()

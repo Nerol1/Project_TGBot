@@ -4,6 +4,7 @@ import os
 
 from .enums import GPTRole, Extensions
 from .resource import ResourcePath
+from .bot_exceptions import AllTrainedException
 
 
 class GPTMessage:
@@ -11,6 +12,7 @@ class GPTMessage:
     def __init__(self, prompt: str):
         self.prompt_file = prompt + Extensions.TXT.value
         self.message_list = self._init_message()
+        self.words_list = []
 
     def _init_message(self) -> list[dict[str, str]]:
         message = {
@@ -31,6 +33,16 @@ class GPTMessage:
             'content': message,
         }
         self.message_list.append(message)
+
+    def add_new_word(self, word: str):
+        self.words_list.append(word)
+
+    def get_next_word(self):
+        if self.words_list:
+            return self.words_list.pop()
+        else:
+            raise AllTrainedException()
+
 
 
 class ChatGPT:
