@@ -10,3 +10,8 @@ class QuizData(CallbackData, prefix='QD'):
     button: str
     topic: str
     topic_name: str
+
+class LangData(CallbackData, prefix='LD'):
+    button: str
+    language: str
+    lang_name: str

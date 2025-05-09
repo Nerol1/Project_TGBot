@@ -10,7 +10,7 @@ from .handlers_state import ChatGPTRequests
 from misc import bot_thinking
 
 
-from keyboards import kb_reply, ikb_celebrity, ikb_quiz_select_topic
+from keyboards import kb_reply, ikb_celebrity, ikb_quiz_select_topic, ikb_language
 
 command_router = Router()
 
@@ -24,6 +24,8 @@ async def com_start(message: Message):
         '/gpt',
         '/talk',
         '/quiz',
+        '/translate',
+        '/train'
     ]
     await message.answer_photo(
         **resource.as_kwargs(),
@@ -66,6 +68,16 @@ async def com_talk(message: Message):
     await message.answer_photo(
         **resource.as_kwargs(),
         reply_markup=ikb_celebrity(),
+    )
+
+
+@command_router.message(Command('translate'))
+async def com_translate(message: Message):
+    await bot_thinking(message)
+    resource = Resource('translate')
+    await message.answer_photo(
+        **resource.as_kwargs(),
+        reply_markup=ikb_language(),
     )
 
 
