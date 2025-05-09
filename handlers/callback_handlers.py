@@ -1,14 +1,15 @@
 from aiogram import Bot, Router, F
 from aiogram.types import CallbackQuery
 from aiogram.fsm.context import FSMContext
+from openai.types.beta.threads.runs import ToolCallDeltaObject
 
 from classes import gpt_client
 from classes.resource import Resource, Button
 from classes.chat_gpt import GPTMessage
 from classes.enums import GPTRole
 from keyboards.callback_data import CelebrityData, QuizData, LangData
-from .handlers_state import CelebrityTalk, Quiz, Translate
-from keyboards import kb_reply, ikb_quiz_select_topic
+from .handlers_state import CelebrityTalk, Quiz, Translate, Tutor
+from keyboards import kb_reply, ikb_quiz_select_topic, ikb_tutor_next, kb_tutor
 
 callback_router = Router()
 
@@ -31,28 +32,70 @@ async def celebrity_callbacks(callback: CallbackQuery, callback_data: CelebrityD
 
 
 
-
+@callback_router.callback_query(LangData.filter(F.button == 'change_language'))
 @callback_router.callback_query(LangData.filter(F.button == 'select_language'))
 async def translate_callbacks(callback: CallbackQuery, callback_data: LangData, bot: Bot, state: FSMContext):
-    photo = Resource('translate').photo
+    command_type = callback_data.command_type
+    photo = Resource(command_type).photo
     language_name = callback_data.lang_name
     await callback.answer(
-        text=f'Перевод на {language_name}',
+        text=f'Выбран язык: {language_name}',
     )
-
-    await bot.send_photo(
-        chat_id=callback.from_user.id,
-        photo=photo,
-        caption='Напишите сообщение для перевода:',
-    )
-
-    request_message = GPTMessage('translate')
-
-    await state.set_state(Translate.wait_for_answer)
+    request_message = GPTMessage(command_type)
+    if command_type == 'translate':
+        await bot.send_photo(
+            chat_id=callback.from_user.id,
+            photo=photo,
+            caption='Напишите сообщение для перевода:',
+        )
+        await state.set_state(Translate.wait_for_answer)
+    else:
+        request_message.update(GPTRole.SYSTEM, f'{callback_data.language}: {command_type}')
+        response = await gpt_client.request(request_message)
+        new_word = response.split(" -> ")[0]
+        request_message.add_new_word(new_word)
+        await bot.send_photo(
+            chat_id=callback.from_user.id,
+            photo=photo,
+            caption=response,
+            reply_markup=ikb_tutor_next(callback_data),
+        )
+        await state.set_state(Tutor.wait_for_word)
     await state.set_data({'messages': request_message, 'photo': photo, 'callback': callback_data})
 
 
+@callback_router.callback_query(LangData.filter(F.button == 'next_word'))
+async def tutor_next_word(callback: CallbackQuery, callback_data: LangData, state: FSMContext):
+    data: dict[str, GPTMessage | str | LangData] = await state.get_data()
+    photo = data['photo']
+    request_message = data['messages']
+    response = await gpt_client.request(request_message)
+    new_word = response.split(" -> ")[0]
+    request_message.add_new_word(new_word)
+    await callback.bot.send_photo(
+        chat_id=callback.from_user.id,
+        photo=photo,
+        caption=response,
+        reply_markup=ikb_tutor_next(callback_data),
+    )
+    await state.set_state(Tutor.wait_for_word)
+    await state.set_data({'messages': request_message, 'photo': photo, 'callback': callback_data})
 
+
+@callback_router.callback_query(LangData.filter(F.button == 'tutor_practice'))
+async def tutor_practice(callback: CallbackQuery, callback_data: LangData, state: FSMContext):
+    data: dict[str, GPTMessage | str | LangData] = await state.get_data()
+    await callback.answer(
+        text=f'Начинаем тренировку!',
+    )
+    await state.set_state(Tutor.wait_for_answer)
+    word = data['messages'].get_next_word()
+    await callback.bot.send_message(
+        chat_id=callback.from_user.id,
+        text=f'Напиши мне перевод слова {word} на русский язык:',
+        reply_markup=kb_tutor(),
+    )
+    await state.set_data({'messages': data['messages'], 'photo': data['photo'], 'score': 0, 'word': word, 'callback': callback_data})
 
 
 

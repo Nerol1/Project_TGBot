@@ -26,14 +26,32 @@ def kb_end_talk():
 
 def kb_translate():
     keyboard = ReplyKeyboardBuilder()
-    keyboard.button(
-        text='Сменить язык',
-    )
-    keyboard.button(
-        text='Закончить!',
-    )
+    buttons = [
+        'Сменить язык',
+        'Закончить!',
+    ]
+    for button in buttons:
+        keyboard.button(
+            text=button,
+        )
     return keyboard.as_markup(
         resize_keyboard=True,
         input_field_placeholder='Следующее сообщение для перевода...',
+        one_time_keyboard=True,
+    )
+
+def kb_tutor():
+    keyboard = ReplyKeyboardBuilder()
+    buttons = [
+        'Закончить!',
+    ]
+    for button in buttons:
+        keyboard.button(
+            text=button,
+        )
+
+    return keyboard.as_markup(
+        resize_keyboard=True,
+        input_field_placeholder='Следующее слово...',
         one_time_keyboard=True,
     )

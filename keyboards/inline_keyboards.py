@@ -20,7 +20,7 @@ def ikb_celebrity():
     return keyboard.as_markup()
 
 
-def ikb_language():
+def ikb_language(command: str):
     keyboard = InlineKeyboardBuilder()
     for language in Languages:
         button = Button(language.name, language.value)
@@ -30,28 +30,11 @@ def ikb_language():
                 button='select_language',
                 language=button.callback,
                 lang_name=button.name,
+                command_type=command,
             )
 
         )
     keyboard.adjust(1)
-    return keyboard.as_markup()
-
-def ikb_translate(current_language: LangData):
-    keyboard = InlineKeyboardBuilder()
-    buttons = [
-        Button('change_language', 'Сменить язык'),
-        Button('finish_translate', 'Закончить'),
-    ]
-    for button in buttons:
-        keyboard.button(
-            text=button.name,
-            callback_data=LangData(
-                button=button.callback,
-                language=current_language.language,
-                lang_name=current_language.lang_name,
-            )
-        )
-    keyboard.adjust(2, 1)
     return keyboard.as_markup()
 
 
@@ -90,6 +73,27 @@ def ikb_quiz_next(current_topic: QuizData):
                 button=button.callback,
                 topic=current_topic.topic,
                 topic_name=current_topic.topic_name
+            )
+        )
+    keyboard.adjust(2, 1)
+    return keyboard.as_markup()
+
+def ikb_tutor_next(current_lang: LangData):
+    keyboard = InlineKeyboardBuilder()
+    buttons = [
+        Button('next_word', 'Еще слово'),
+        Button('tutor_practice', 'Тренироваться'),
+        Button('change_language', 'Сменить язык'),
+        Button('finish_tutor', 'Закончить'),
+    ]
+    for button in buttons:
+        keyboard.button(
+            text=button.name,
+            callback_data=LangData(
+                button=button.callback,
+                language=current_lang.language,
+                lang_name=current_lang.lang_name,
+                command_type=current_lang.command_type,
             )
         )
     keyboard.adjust(2, 1)

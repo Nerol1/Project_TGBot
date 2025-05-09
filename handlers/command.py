@@ -25,7 +25,7 @@ async def com_start(message: Message):
         '/talk',
         '/quiz',
         '/translate',
-        '/train'
+        '/tutor'
     ]
     await message.answer_photo(
         **resource.as_kwargs(),
@@ -71,16 +71,6 @@ async def com_talk(message: Message):
     )
 
 
-@command_router.message(Command('translate'))
-async def com_translate(message: Message):
-    await bot_thinking(message)
-    resource = Resource('translate')
-    await message.answer_photo(
-        **resource.as_kwargs(),
-        reply_markup=ikb_language(),
-    )
-
-
 @command_router.message(Command('quiz'))
 async def com_quiz(message: Message):
     await bot_thinking(message)
@@ -88,4 +78,22 @@ async def com_quiz(message: Message):
     await message.answer_photo(
         **resource.as_kwargs(),
         reply_markup=ikb_quiz_select_topic(),
+    )
+
+@command_router.message(Command('translate'))
+async def com_translate(message: Message):
+    await bot_thinking(message)
+    resource = Resource('translate')
+    await message.answer_photo(
+        **resource.as_kwargs(),
+        reply_markup=ikb_language('translate'),
+    )
+
+@command_router.message(Command('tutor'))
+async def com_tutor(message: Message):
+    await bot_thinking(message)
+    resource = Resource('tutor')
+    await message.answer_photo(
+        **resource.as_kwargs(),
+        reply_markup=ikb_language('tutor'),
     )
