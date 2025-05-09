@@ -1,4 +1,5 @@
 # Проект "Telegram/ChatGPT" в рамках обучения в Python University JavaRush (финальный для Модуля 1)
+Имя бота в ТГ: @jr_project_tgchat_bot
 
 ## Краткое описание:
 - Проект представляет собой Telegram-бота с подключением ChatGPT.
