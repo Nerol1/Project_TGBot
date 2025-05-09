@@ -10,14 +10,15 @@ from classes.resource import Resource
 from classes.chat_gpt import GPTMessage, GPTRole
 from keyboards import kb_end_talk, ikb_quiz_next, kb_translate, kb_tutor
 from keyboards.callback_data import QuizData, LangData
-from .command import com_start, com_translate, com_tutor
+from .command import com_start, com_translate
 from misc import bot_thinking
 
 message_router = Router()
 
-@message_router.message(Tutor.wait_for_answer, F.text == 'Закончить!')
-@message_router.message(Translate.wait_for_answer, F.text == 'Закончить!')
-@message_router.message(CelebrityTalk.wait_for_answer, F.text == 'Попрощаться!')
+@message_router.message(Tutor.wait_for_answer, F.text == 'Закончить')
+@message_router.message(Translate.wait_for_answer, F.text == 'Закончить')
+@message_router.message(CelebrityTalk.wait_for_answer, F.text == 'Попрощаться')
+@message_router.message(ChatGPTRequests.wait_for_request, F.text == 'Попрощаться')
 async def end_talk_handler(message: Message, state: FSMContext):
     await state.clear()
     await com_start(message)
@@ -40,8 +41,8 @@ async def wait_for_gpt_handler(message: Message, state: FSMContext):
     await message.answer_photo(
         photo=photo,
         caption=gpt_response,
+        reply_markup=kb_end_talk(),
     )
-    await state.clear()
 
 
 @message_router.message(CelebrityTalk.wait_for_answer)

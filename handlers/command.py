@@ -8,6 +8,7 @@ from classes.resource import Resource
 from classes.chat_gpt import GPTMessage
 from .handlers_state import ChatGPTRequests
 from misc import bot_thinking
+from keyboards.callback_data import CelebrityData, QuizData, LangData
 
 
 from keyboards import kb_reply, ikb_celebrity, ikb_quiz_select_topic, ikb_language
