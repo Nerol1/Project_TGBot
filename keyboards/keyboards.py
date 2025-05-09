@@ -16,7 +16,7 @@ def kb_reply(buttons):
 def kb_end_talk():
     keyboard = ReplyKeyboardBuilder()
     keyboard.button(
-        text='Попрощаться!',
+        text='Попрощаться',
     )
     return keyboard.as_markup(
         resize_keyboard=True,
@@ -28,7 +28,7 @@ def kb_translate():
     keyboard = ReplyKeyboardBuilder()
     buttons = [
         'Сменить язык',
-        'Закончить!',
+        'Закончить',
     ]
     for button in buttons:
         keyboard.button(
@@ -43,7 +43,7 @@ def kb_translate():
 def kb_tutor():
     keyboard = ReplyKeyboardBuilder()
     buttons = [
-        'Закончить!',
+        'Закончить',
     ]
     for button in buttons:
         keyboard.button(

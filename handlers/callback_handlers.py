@@ -1,5 +1,5 @@
 from aiogram import Bot, Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from openai.types.beta.threads.runs import ToolCallDeltaObject
 
@@ -9,7 +9,8 @@ from classes.chat_gpt import GPTMessage
 from classes.enums import GPTRole
 from keyboards.callback_data import CelebrityData, QuizData, LangData
 from .handlers_state import CelebrityTalk, Quiz, Translate, Tutor
-from keyboards import kb_reply, ikb_quiz_select_topic, ikb_tutor_next, kb_tutor
+from keyboards import kb_reply, ikb_quiz_select_topic, ikb_tutor_next, kb_tutor, ikb_language
+from .command import com_start
 
 callback_router = Router()
 
@@ -33,8 +34,20 @@ async def celebrity_callbacks(callback: CallbackQuery, callback_data: CelebrityD
 
 
 @callback_router.callback_query(LangData.filter(F.button == 'change_language'))
+async def change_lang_callbacks(callback: CallbackQuery, callback_data: LangData, bot: Bot, state: FSMContext):
+    command_type = callback_data.command_type
+    resource = Resource(command_type)
+    await bot.send_photo(
+        chat_id=callback.from_user.id,
+        **resource.as_kwargs(),
+        reply_markup=ikb_language(command_type),
+    )
+
+
+
+
 @callback_router.callback_query(LangData.filter(F.button == 'select_language'))
-async def translate_callbacks(callback: CallbackQuery, callback_data: LangData, bot: Bot, state: FSMContext):
+async def select_lang_callbacks(callback: CallbackQuery, callback_data: LangData, bot: Bot, state: FSMContext):
     command_type = callback_data.command_type
     photo = Resource(command_type).photo
     language_name = callback_data.lang_name
@@ -50,7 +63,7 @@ async def translate_callbacks(callback: CallbackQuery, callback_data: LangData, 
         )
         await state.set_state(Translate.wait_for_answer)
     else:
-        request_message.update(GPTRole.SYSTEM, f'{callback_data.language}: {command_type}')
+        request_message.update(GPTRole.SYSTEM, f'Дай случайное слово на {callback_data.lang_name}')
         response = await gpt_client.request(request_message)
         new_word = response.split(" -> ")[0]
         request_message.add_new_word(new_word)
@@ -147,20 +160,21 @@ async def quiz_next_question(callback: CallbackQuery, callback_data: QuizData, s
     await state.update_data(data)
 
 @callback_router.callback_query(QuizData.filter(F.button == 'finish_quiz'))
-async def quiz_exit(callback: CallbackQuery, callback_data: QuizData, state: FSMContext):
+@callback_router.callback_query(LangData.filter(F.button == 'finish_tutor'))
+async def return_to_start(callback: CallbackQuery, callback_data: QuizData|LangData, state: FSMContext):
+    resource = Resource('main')
     buttons = [
         '/random',
         '/gpt',
         '/talk',
         '/quiz',
+        '/translate',
+        '/tutor'
     ]
-
-    await callback.bot.send_message(
+    await callback.bot.send_photo(
         chat_id=callback.from_user.id,
-        text=f'Завершаем квиз!',
+        **resource.as_kwargs(),
         reply_markup=kb_reply(buttons),
     )
-    await callback.answer(
-        text=f'Завершаем квиз!',
-    )
     await state.clear()
+

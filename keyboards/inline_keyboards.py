@@ -96,5 +96,5 @@ def ikb_tutor_next(current_lang: LangData):
                 command_type=current_lang.command_type,
             )
         )
-    keyboard.adjust(2, 1)
+    keyboard.adjust(3, 1)
     return keyboard.as_markup()
