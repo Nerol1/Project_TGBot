@@ -11,3 +11,6 @@ class CelebrityTalk(StatesGroup):
 
 class Quiz(StatesGroup):
     wait_for_answer = State()
+
+class Translate(StatesGroup):
+    wait_for_answer = State()

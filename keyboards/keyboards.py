@@ -23,3 +23,17 @@ def kb_end_talk():
         input_field_placeholder='Задайте свой вопрос...',
         one_time_keyboard=True,
     )
+
+def kb_translate():
+    keyboard = ReplyKeyboardBuilder()
+    keyboard.button(
+        text='Сменить язык',
+    )
+    keyboard.button(
+        text='Закончить!',
+    )
+    return keyboard.as_markup(
+        resize_keyboard=True,
+        input_field_placeholder='Следующее сообщение для перевода...',
+        one_time_keyboard=True,
+    )

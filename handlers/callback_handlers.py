@@ -6,8 +6,8 @@ from classes import gpt_client
 from classes.resource import Resource, Button
 from classes.chat_gpt import GPTMessage
 from classes.enums import GPTRole
-from keyboards.callback_data import CelebrityData, QuizData
-from .handlers_state import CelebrityTalk, Quiz
+from keyboards.callback_data import CelebrityData, QuizData, LangData
+from .handlers_state import CelebrityTalk, Quiz, Translate
 from keyboards import kb_reply, ikb_quiz_select_topic
 
 callback_router = Router()
@@ -30,6 +30,33 @@ async def celebrity_callbacks(callback: CallbackQuery, callback_data: CelebrityD
     await state.set_data({'messages': request_message, 'photo': photo})
 
 
+
+
+@callback_router.callback_query(LangData.filter(F.button == 'select_language'))
+async def translate_callbacks(callback: CallbackQuery, callback_data: LangData, bot: Bot, state: FSMContext):
+    photo = Resource('translate').photo
+    language_name = callback_data.lang_name
+    await callback.answer(
+        text=f'Перевод на {language_name}',
+    )
+
+    await bot.send_photo(
+        chat_id=callback.from_user.id,
+        photo=photo,
+        caption='Напишите сообщение для перевода:',
+    )
+
+    request_message = GPTMessage('translate')
+
+    await state.set_state(Translate.wait_for_answer)
+    await state.set_data({'messages': request_message, 'photo': photo, 'callback': callback_data})
+
+
+
+
+
+
+
 @callback_router.callback_query(QuizData.filter(F.button == 'change_topic'))
 async def quiz_change_topic(callback: CallbackQuery, callback_data: QuizData, state: FSMContext):
     data: dict[str, GPTMessage | str | QuizData] = await state.get_data()
@@ -42,7 +69,7 @@ async def quiz_change_topic(callback: CallbackQuery, callback_data: QuizData, st
 
 
 @callback_router.callback_query(QuizData.filter(F.button == 'select_topic'))
-async def celebrity_callbacks(callback: CallbackQuery, callback_data: QuizData, bot: Bot, state: FSMContext):
+async def quiz_new_topic(callback: CallbackQuery, callback_data: QuizData, bot: Bot, state: FSMContext):
     photo = Resource('quiz').photo
     await callback.answer(
         text=f'Вы выбрали тему {callback_data.topic_name}!',
